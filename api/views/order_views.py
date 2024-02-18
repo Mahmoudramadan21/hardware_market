@@ -17,8 +17,41 @@ from django.core.paginator import Paginator, PageNotAnInteger, Page
 # datetime
 from datetime import datetime
 
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 #***************************************************************************#
 
+@swagger_auto_schema(method='post', request_body=openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    required=['paymentMethod', 'taxPrice', 'shippingPrice', 'totalPrice', 'shippingAddress', 'orderItems'],
+    properties={
+        'paymentMethod': openapi.Schema(type=openapi.TYPE_STRING),
+        'taxPrice': openapi.Schema(type=openapi.TYPE_NUMBER),
+        'shippingPrice': openapi.Schema(type=openapi.TYPE_NUMBER),
+        'totalPrice': openapi.Schema(type=openapi.TYPE_NUMBER),
+        'shippingAddress': openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'address': openapi.Schema(type=openapi.TYPE_STRING),
+                'city': openapi.Schema(type=openapi.TYPE_STRING),
+                'postalCode': openapi.Schema(type=openapi.TYPE_STRING),
+                'country': openapi.Schema(type=openapi.TYPE_STRING),
+            }
+        ),
+        'orderItems': openapi.Schema(
+            type=openapi.TYPE_ARRAY,
+            items=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                required=['book', 'qty', 'price'],
+                properties={
+                    'book': openapi.Schema(type=openapi.TYPE_INTEGER),
+                    'qty': openapi.Schema(type=openapi.TYPE_INTEGER),
+                    'price': openapi.Schema(type=openapi.TYPE_NUMBER),
+                }
+            )
+        ),
+    }
+))
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def addOrderItems(request):

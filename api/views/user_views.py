@@ -18,10 +18,14 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 # hashing-password
 from django.contrib.auth.hashers import make_password
 
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
+
+
 ################################################################
 
-# Login
 
+# Login
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         data = super().validate(attrs)
@@ -36,6 +40,17 @@ class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
 
 # Register a new user
+@swagger_auto_schema(method='post', request_body=openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    required=['username', 'email', 'first-name', 'last-name', 'password'],
+    properties={
+        'username': openapi.Schema(type=openapi.TYPE_STRING),
+        'email': openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_EMAIL),
+        'first-name': openapi.Schema(type=openapi.TYPE_STRING),
+        'last-name': openapi.Schema(type=openapi.TYPE_STRING),
+        'password': openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_PASSWORD),
+    }
+))
 @api_view(['POST'])
 def registerUser(request):
     try:
@@ -67,9 +82,8 @@ def registerUser(request):
         # Handle case where 'password' key is missing from request data
         return Response({'error': 'Password field is missing'}, status=status.HTTP_400_BAD_REQUEST)
 
-    except Exception as e:
-        # Handle unexpected errors
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    except:
+        return Response('Unexpected error')
 
 # User profile for User
 @api_view(['GET'])
@@ -80,9 +94,21 @@ def getUserProfile(request):
         serializer = UserSerializer(user)
         return Response(serializer.data)
 
-    except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    except:
+        return Response('Unexpected error')
 
+# Update User Profile
+@swagger_auto_schema(method='put', request_body=openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    required=['username', 'email', 'first-name', 'last-name', 'password'],
+    properties={
+        'username': openapi.Schema(type=openapi.TYPE_STRING),
+        'email': openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_EMAIL),
+        'first-name': openapi.Schema(type=openapi.TYPE_STRING),
+        'last-name': openapi.Schema(type=openapi.TYPE_STRING),
+        'password': openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_PASSWORD),
+    }
+))
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def updateUserProfile(request):
@@ -122,12 +148,12 @@ def updateUserProfile(request):
         user.save()
         return Response(serializer.data)
 
-    except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    except:
+        return Response('Unexpected error')
 
 
 
-# Get All User For Admin
+
 @api_view(['GET'])
 @permission_classes([IsAdminUser])
 def getUsers(request):
@@ -136,10 +162,10 @@ def getUsers(request):
         serializer = UserSerializer(users, many=True)
         return Response(serializer.data)
 
-    except Exception as e:
-        # Handle unexpected errors
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    except:
+        return Response('Unexpected error')
 
+# Get User by id for Admin
 @api_view(['GET'])
 @permission_classes([IsAdminUser])
 def getUserById(request, pk):
@@ -151,20 +177,28 @@ def getUserById(request, pk):
     except User.DoesNotExist:
         return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
-    except Exception as e:
-        # Handle unexpected errors
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    except:
+        return Response('Unexpected error')
 
 # Update User by Admin
+@swagger_auto_schema(method='put', request_body=openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    required=['username', 'email', 'first-name', 'last-name', 'password'],
+    properties={
+        'username': openapi.Schema(type=openapi.TYPE_STRING),
+        'email': openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_EMAIL),
+        'is-admin': openapi.Schema(type=openapi.TYPE_STRING),
+    }
+))
 @api_view(['PUT'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAdminUser])
 def updateUser(request, pk):
     try:
         user = User.objects.get(id=pk)
         data = request.data
 
         # Update user fields if data exists
-        user.is_staff = data['isAdmin']
+        user.is_staff = data['is-admin']
 
         # Update username and email if provided
         if 'username' in data:
@@ -172,6 +206,7 @@ def updateUser(request, pk):
             if User.objects.filter(username=data['username']).exclude(id=pk).exists():
                 return Response({'detail': 'Username already exists'}, status=status.HTTP_400_BAD_REQUEST)
             user.username = data['username']
+
         if 'email' in data:
             # Check if the new email is already taken
             if User.objects.filter(email=data['email']).exclude(id=pk).exists():
@@ -183,9 +218,8 @@ def updateUser(request, pk):
         serializer = UserSerializer(user, many=False)
         return Response(serializer.data)
 
-    except Exception as e:
-        # Handle unexpected errors
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    except:
+        return Response('Unexpected error')
 
 # Delete User by Admin
 @api_view(['DELETE'])

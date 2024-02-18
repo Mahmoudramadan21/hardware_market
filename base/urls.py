@@ -20,8 +20,26 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
+
+from drf_yasg import openapi
+from drf_yasg.views import get_schema_view as swagger_get_schema_view
+from rest_framework import permissions
+
+schema_view = swagger_get_schema_view(
+    openapi.Info(
+        title = 'Bookify',
+        default_version = '1.0.0',
+        description = 'Bookify Swagger Schema'
+    ),
+    public = True,
+    permission_classes=(permissions.AllowAny,),
+
+)
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('swagger/schema/', schema_view.with_ui('swagger', cache_timeout=0),
+                            name='swagger-schema'),
     path('api/users/', include('api.urls.user_urls')),
     path('api/products/', include('api.urls.product_urls')),
     path('api/orders/', include('api.urls.order_urls'))

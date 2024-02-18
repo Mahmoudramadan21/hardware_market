@@ -14,6 +14,10 @@ from api.models import *
 # pagination
 from django.core.paginator import Paginator, PageNotAnInteger, Page
 
+
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
+
 #***************************************************************************#
 
 # Get All Products
@@ -72,26 +76,31 @@ def getProduct(request, pk):
         return Response('Unexpected error')
 
 
-# Get a Category
 @api_view(['GET'])
-def getaCategoryOfProducts(request, name):
+def getCategoryOfProducts(request, name):
     try:
-        query = request.query_params.get('q')
-        if query is None:
-            query = ''
-
-        products = Product.objects.filter(category__icontains=name)
-        products = Product.objects.filter(
-            name__icontains=query).order_by('-createdAt')
-
+        query = request.query_params.get('q', '')  # Use default value directly in get() method
+        products = Product.objects.filter(category__icontains=name, name__icontains=query).order_by('-createdAt')
         serializer = ProductSerializer(products, many=True)
         return Response(serializer.data)
-
-    except:
+    except:  # Catch specific exceptions if possible
         # Handle unexpected errors
         return Response('Unexpected error')
 
-# Create a Product9
+
+# Create a Product
+@swagger_auto_schema(method='post', request_body=openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    required=['name', 'image', 'price', 'description', 'category', 'count-in-stock'],
+    properties={
+        'name': openapi.Schema(type=openapi.TYPE_STRING),
+        'image': openapi.Schema(type=openapi.TYPE_FILE),
+        'price': openapi.Schema(type=openapi.TYPE_NUMBER),
+        'description': openapi.Schema(type=openapi.TYPE_STRING),
+        'category': openapi.Schema(type=openapi.TYPE_STRING),
+        'count-in-stock': openapi.Schema(type=openapi.TYPE_STRING),
+    }
+))
 @api_view(['POST'])
 @permission_classes([IsAdminUser])
 def createProduct(request):
@@ -111,12 +120,24 @@ def createProduct(request):
         serializer = ProductSerializer(product, many=False)
         return Response(serializer.data)
 
-    except:
+    except Exception as e:
         # Handle unexpected errors
-        return Response('Unexpected error')
+        return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 # Update a Product
+@swagger_auto_schema(method='put', request_body=openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    required=['name', 'image', 'price', 'description', 'category', 'count-in-stock'],
+    properties={
+        'name': openapi.Schema(type=openapi.TYPE_STRING),
+        'image': openapi.Schema(type=openapi.TYPE_FILE),
+        'price': openapi.Schema(type=openapi.TYPE_NUMBER),
+        'description': openapi.Schema(type=openapi.TYPE_STRING),
+        'category': openapi.Schema(type=openapi.TYPE_STRING),
+        'count-in-stock': openapi.Schema(type=openapi.TYPE_STRING),
+    }
+))
 @api_view(['PUT'])
 @permission_classes([IsAdminUser])
 def updateProduct(request, pk):
@@ -155,6 +176,14 @@ def deleteProduct(request, pk):
 
 
 # Create a Product Review
+@swagger_auto_schema(method='post', request_body=openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    required=['rating', 'comment'],
+    properties={
+        'rating': openapi.Schema(type=openapi.TYPE_INTEGER, format='int32'),
+        'comment': openapi.Schema(type=openapi.TYPE_STRING),
+    }
+))
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def createProductReview(request, pk):

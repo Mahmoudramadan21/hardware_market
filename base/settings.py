@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from pathlib import Path
 from datetime import timedelta
 import os
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -48,9 +49,21 @@ INSTALLED_APPS = [
     # core-headers
     'corsheaders',
 
+    'drf_yasg'
+
 ]
 
 CORS_ALLOW_ALL_ORIGINS: True
+
+SWAGGER_SETTINGS = {
+   'SECURITY_DEFINITIONS': {
+      'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+      }
+   }
+}
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -99,9 +112,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-]
+CORS_ALLOW_ALL_ORIGINS: True
 
 ROOT_URLCONF = 'base.urls'
 
@@ -165,10 +176,18 @@ USE_I18N = True
 
 USE_TZ = True
 
+# Dont forget to reset database connection and hide password
+AWS_QUERYSTRING_AUTH = False
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+AWS_ACCESS_KEY_ID = 'AKIA3FLD4HR3ZCCFTOEX'
+AWS_SECRET_ACCESS_KEY = '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'
+
+AWS_STORAGE_BUCKET_NAME = 'bookify-bucket-demo'
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
-
 STATIC_URL = 'static/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
