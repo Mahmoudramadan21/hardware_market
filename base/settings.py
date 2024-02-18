@@ -177,13 +177,13 @@ USE_I18N = True
 USE_TZ = True
 
 # Dont forget to reset database connection and hide password
-AWS_QUERYSTRING_AUTH = False
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+# AWS_QUERYSTRING_AUTH = ''
+# DEFAULT_FILE_STORAGE = ''
 
-AWS_ACCESS_KEY_ID = 'AKIA3FLD4HR3ZCCFTOEX'
-AWS_SECRET_ACCESS_KEY = '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'
+# AWS_ACCESS_KEY_ID = ''
+# AWS_SECRET_ACCESS_KEY = ''
 
-AWS_STORAGE_BUCKET_NAME = 'bookify-bucket-demo'
+# AWS_STORAGE_BUCKET_NAME = ''
 
 
 # Static files (CSS, JavaScript, Images)
